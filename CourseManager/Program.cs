@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace CourseManager
 {
-    internal class Program
+    class Program
     {
         static CourseManagementSystem system = new CourseManagementSystem();
         static List<Teacher> teachers = new List<Teacher>();
@@ -31,18 +30,15 @@ namespace CourseManager
                 if (command == "0")
                     break;
 
-                switch (command)
-                {
-                    case "1": AddCourse(); break;
-                    case "2": AddTeacher(); break;
-                    case "3": AddStudent(); break;
-                    case "4": AssignTeacherToCourse(); break;
-                    case "5": EnrollStudentToCourse(); break;
-                    case "6": ShowTeacherCourses(); break;
-                    case "7": ShowCourseStudents(); break;
-                    case "8": ListCourses(); break;
-                    default: Console.WriteLine("Неизвестная команда"); break;
-                }
+                if (command == "1") AddCourse();
+                else if (command == "2") AddTeacher();
+                else if (command == "3") AddStudent();
+                else if (command == "4") AssignTeacherToCourse();
+                else if (command == "5") EnrollStudentToCourse();
+                else if (command == "6") ShowTeacherCourses();
+                else if (command == "7") ShowCourseStudents();
+                else if (command == "8") ListCourses();
+                else Console.WriteLine("Неизвестная команда");
 
                 Console.WriteLine();
             }
@@ -63,8 +59,8 @@ namespace CourseManager
                 Console.Write("URL: ");
                 string url = Console.ReadLine();
 
-                var course = new OnlineCourse(title, platform, url);
-                system.AddCourse(course);
+                system.AddCourse(new OnlineCourse(title, platform, url));
+                Console.WriteLine("Курс добавлен");
             }
             else if (type == "2")
             {
@@ -73,16 +69,13 @@ namespace CourseManager
                 Console.Write("Корпус: ");
                 string building = Console.ReadLine();
 
-                var course = new OfflineCourse(title, classroom, building);
-                system.AddCourse(course);
+                system.AddCourse(new OfflineCourse(title, classroom, building));
+                Console.WriteLine("Курс добавлен");
             }
             else
             {
                 Console.WriteLine("Неверный тип курса");
-                return;
             }
-
-            Console.WriteLine("Курс добавлен");
         }
 
         static void AddTeacher()
@@ -90,9 +83,7 @@ namespace CourseManager
             Console.Write("ФИО преподавателя: ");
             string name = Console.ReadLine();
 
-            var teacher = new Teacher(name);
-            teachers.Add(teacher);
-
+            teachers.Add(new Teacher(name));
             Console.WriteLine("Преподаватель добавлен");
         }
 
@@ -101,18 +92,16 @@ namespace CourseManager
             Console.Write("ФИО студента: ");
             string name = Console.ReadLine();
 
-            var student = new Student(name);
-            students.Add(student);
-
+            students.Add(new Student(name));
             Console.WriteLine("Студент добавлен");
         }
 
         static void AssignTeacherToCourse()
         {
-            var course = ChooseCourse();
+            Course course = ChooseCourse();
             if (course == null) return;
 
-            var teacher = ChooseTeacher();
+            Teacher teacher = ChooseTeacher();
             if (teacher == null) return;
 
             system.AssignTeacherToCourse(course.Id, teacher);
@@ -121,10 +110,10 @@ namespace CourseManager
 
         static void EnrollStudentToCourse()
         {
-            var course = ChooseCourse();
+            Course course = ChooseCourse();
             if (course == null) return;
 
-            var student = ChooseStudent();
+            Student student = ChooseStudent();
             if (student == null) return;
 
             system.EnrollStudentToCourse(course.Id, student);
@@ -133,10 +122,10 @@ namespace CourseManager
 
         static void ShowTeacherCourses()
         {
-            var teacher = ChooseTeacher();
+            Teacher teacher = ChooseTeacher();
             if (teacher == null) return;
 
-            var courses = system.GetCoursesByTeacher(teacher.Id);
+            List<Course> courses = system.GetCoursesByTeacher(teacher.Id);
 
             if (courses.Count == 0)
             {
@@ -145,16 +134,16 @@ namespace CourseManager
             }
 
             Console.WriteLine("Курсы преподавателя " + teacher.FullName + ":");
-            foreach (var c in courses)
-                Console.WriteLine("- " + c.Title);
+            for (int i = 0; i < courses.Count; i++)
+                Console.WriteLine("- " + courses[i].Title);
         }
 
         static void ShowCourseStudents()
         {
-            var course = ChooseCourse();
+            Course course = ChooseCourse();
             if (course == null) return;
 
-            var courseStudents = system.GetStudentsOfCourse(course.Id);
+            List<Student> courseStudents = system.GetStudentsOfCourse(course.Id);
 
             if (courseStudents.Count == 0)
             {
@@ -163,13 +152,14 @@ namespace CourseManager
             }
 
             Console.WriteLine("Студенты курса " + course.Title + ":");
-            foreach (var s in courseStudents)
-                Console.WriteLine("- " + s.FullName);
+            for (int i = 0; i < courseStudents.Count; i++)
+                Console.WriteLine("- " + courseStudents[i].FullName);
         }
 
         static void ListCourses()
         {
-            var courses = system.Courses.ToList();
+            List<Course> courses = system.Courses;
+
             if (courses.Count == 0)
             {
                 Console.WriteLine("Курсов нет");
@@ -179,15 +169,16 @@ namespace CourseManager
             Console.WriteLine("Список курсов:");
             for (int i = 0; i < courses.Count; i++)
             {
-                var c = courses[i];
-                string teacherName = c.Teacher != null ? c.Teacher.FullName : "не назначен";
-                Console.WriteLine($"{i + 1}. {c.Title} | Преподаватель: {teacherName}");
+                Course c = courses[i];
+                string teacherName = (c.Teacher != null) ? c.Teacher.FullName : "не назначен";
+                Console.WriteLine((i + 1) + ". " + c.Title + " | Преподаватель: " + teacherName);
             }
         }
 
         static Course ChooseCourse()
         {
-            var courses = system.Courses.ToList();
+            List<Course> courses = system.Courses;
+
             if (courses.Count == 0)
             {
                 Console.WriteLine("Курсов нет");
@@ -196,11 +187,17 @@ namespace CourseManager
 
             Console.WriteLine("Выберите курс:");
             for (int i = 0; i < courses.Count; i++)
-                Console.WriteLine($"{i + 1}. {courses[i].Title}");
+                Console.WriteLine((i + 1) + ". " + courses[i].Title);
 
             Console.Write("Номер: ");
-            if (!int.TryParse(Console.ReadLine(), out int index) ||
-                index < 1 || index > courses.Count)
+            int index;
+            if (!int.TryParse(Console.ReadLine(), out index))
+            {
+                Console.WriteLine("Неверный номер");
+                return null;
+            }
+
+            if (index < 1 || index > courses.Count)
             {
                 Console.WriteLine("Неверный номер");
                 return null;
@@ -219,11 +216,17 @@ namespace CourseManager
 
             Console.WriteLine("Выберите преподавателя:");
             for (int i = 0; i < teachers.Count; i++)
-                Console.WriteLine($"{i + 1}. {teachers[i].FullName}");
+                Console.WriteLine((i + 1) + ". " + teachers[i].FullName);
 
             Console.Write("Номер: ");
-            if (!int.TryParse(Console.ReadLine(), out int index) ||
-                index < 1 || index > teachers.Count)
+            int index;
+            if (!int.TryParse(Console.ReadLine(), out index))
+            {
+                Console.WriteLine("Неверный номер");
+                return null;
+            }
+
+            if (index < 1 || index > teachers.Count)
             {
                 Console.WriteLine("Неверный номер");
                 return null;
@@ -242,11 +245,17 @@ namespace CourseManager
 
             Console.WriteLine("Выберите студента:");
             for (int i = 0; i < students.Count; i++)
-                Console.WriteLine($"{i + 1}. {students[i].FullName}");
+                Console.WriteLine((i + 1) + ". " + students[i].FullName);
 
             Console.Write("Номер: ");
-            if (!int.TryParse(Console.ReadLine(), out int index) ||
-                index < 1 || index > students.Count)
+            int index;
+            if (!int.TryParse(Console.ReadLine(), out index))
+            {
+                Console.WriteLine("Неверный номер");
+                return null;
+            }
+
+            if (index < 1 || index > students.Count)
             {
                 Console.WriteLine("Неверный номер");
                 return null;
