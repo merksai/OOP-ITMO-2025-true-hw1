@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using CourseManager;
 using Xunit;
 
@@ -32,6 +31,16 @@ namespace CourseManager.Tests
         }
 
         [Fact]
+        public void RemoveCourse_ShouldReturnFalse_WhenCourseNotFound()
+        {
+            var system = new CourseManagementSystem();
+
+            var removed = system.RemoveCourse(Guid.NewGuid());
+
+            Assert.False(removed);
+        }
+
+        [Fact]
         public void AssignTeacherToCourse_ShouldSetTeacher()
         {
             var system = new CourseManagementSystem();
@@ -56,6 +65,16 @@ namespace CourseManager.Tests
             var students = system.GetStudentsOfCourse(course.Id);
 
             Assert.Contains(student, students);
+        }
+
+        [Fact]
+        public void GetStudentsOfCourse_ShouldReturnEmptyList_WhenCourseNotFound()
+        {
+            var system = new CourseManagementSystem();
+
+            var students = system.GetStudentsOfCourse(Guid.NewGuid());
+
+            Assert.Empty(students);
         }
 
         [Fact]
