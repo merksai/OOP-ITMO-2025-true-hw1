@@ -1,69 +1,75 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace CourseManager
 {
     public class CourseManagementSystem
     {
-        private readonly List<Course> _courses = new List<Course>();
-
-        public IReadOnlyCollection<Course> Courses => _courses.AsReadOnly();
+        public List<Course> Courses { get; } = new List<Course>();
 
         public void AddCourse(Course course)
         {
-            if (course == null)
-                throw new ArgumentNullException(nameof(course));
-
-            if (_courses.Any(c => c.Id == course.Id))
-                throw new InvalidOperationException("Курс с таким Id уже существует");
-
-            _courses.Add(course);
+            Courses.Add(course);
         }
 
         public bool RemoveCourse(Guid courseId)
         {
-            var course = _courses.FirstOrDefault(c => c.Id == courseId);
-            if (course == null)
-                return false;
-
-            _courses.Remove(course);
-            return true;
+            for (int i = 0; i < Courses.Count; i++)
+            {
+                if (Courses[i].Id == courseId)
+                {
+                    Courses.RemoveAt(i);
+                    return true;
+                }
+            }
+            return false;
         }
 
-        private Course GetCourseOrThrow(Guid courseId)
+        private Course GetCourse(Guid courseId)
         {
-            var course = _courses.FirstOrDefault(c => c.Id == courseId);
-            if (course == null)
-                throw new InvalidOperationException("Курс не найден");
-            return course;
+            for (int i = 0; i < Courses.Count; i++)
+            {
+                if (Courses[i].Id == courseId)
+                    return Courses[i];
+            }
+            return null;
         }
 
         public void AssignTeacherToCourse(Guid courseId, Teacher teacher)
         {
-            var course = GetCourseOrThrow(courseId);
-            course.AssignTeacher(teacher);
+            var course = GetCourse(courseId);
+            if (course != null)
+                course.AssignTeacher(teacher);
         }
 
         public void EnrollStudentToCourse(Guid courseId, Student student)
         {
-            var course = GetCourseOrThrow(courseId);
-            course.EnrollStudent(student);
+            var course = GetCourse(courseId);
+            if (course != null)
+                course.EnrollStudent(student);
         }
 
-        public IReadOnlyCollection<Student> GetStudentsOfCourse(Guid courseId)
+        public List<Student> GetStudentsOfCourse(Guid courseId)
         {
-            var course = GetCourseOrThrow(courseId);
-            return course.Students;
+            var course = GetCourse(courseId);
+            if (course != null)
+                return course.Students;
+
+            return new List<Student>();
         }
 
-        public IReadOnlyCollection<Course> GetCoursesByTeacher(Guid teacherId)
+        public List<Course> GetCoursesByTeacher(Guid teacherId)
         {
-            var result = _courses
-                .Where(c => c.Teacher != null && c.Teacher.Id == teacherId)
-                .ToList();
+            var result = new List<Course>();
 
-            return result.AsReadOnly();
+            for (int i = 0; i < Courses.Count; i++)
+            {
+                var course = Courses[i];
+                if (course.Teacher != null && course.Teacher.Id == teacherId)
+                    result.Add(course);
+            }
+
+            return result;
         }
     }
 }
