@@ -5,41 +5,33 @@ namespace CourseManager
 {
     public abstract class Course
     {
-        public Guid Id { get; }
+        public Guid Id { get; } = Guid.NewGuid();
         public string Title { get; }
         public Teacher Teacher { get; private set; }
 
-        private readonly List<Student> _students = new List<Student>();
-        public IReadOnlyCollection<Student> Students => _students.AsReadOnly();
+        public List<Student> Students { get; } = new List<Student>();
 
-        protected Course(string title)
+        public Course(string title)
         {
-            if (string.IsNullOrWhiteSpace(title))
-                throw new ArgumentException("Название курса не может быть пустым", nameof(title));
-
-            Id = Guid.NewGuid();
             Title = title;
         }
 
         public void AssignTeacher(Teacher teacher)
         {
-            Teacher = teacher ?? throw new ArgumentNullException(nameof(teacher));
+            Teacher = teacher;
         }
 
         public void EnrollStudent(Student student)
         {
-            if (student == null)
-                throw new ArgumentNullException(nameof(student));
-
-            if (!_students.Contains(student))
-                _students.Add(student);
+            if (!Students.Contains(student))
+                Students.Add(student);
         }
 
         public override string ToString()
         {
-            return $"{Title} ({GetCourseTypeName()})";
+            return Title + " (" + GetCourseTypeName() + ")";
         }
 
-        protected abstract string GetCourseTypeName();
+        public abstract string GetCourseTypeName();
     }
 }
